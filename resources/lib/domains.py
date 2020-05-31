@@ -2402,6 +2402,45 @@ class ClassFlickr(sitesBase):
         else:
             log('    NOT AN ALBUM: unexpected flickr media type ' + self.fmedia_type )
 
+class ClassRedgifs(sitesBase):
+    regex='(redgifs.com)'
+
+    def get_playable_url(self, media_url, is_probably_a_video=True ):
+        #the video id i get do not have capital letters
+        #ytdl seems to be able to get the correct video id
+        self.link_action=sitesBase.DI_ACTION_YTDL
+        self.media_type=sitesBase.TYPE_VIDEO
+        return media_url, self.media_type
+
+        #end here
+        self.get_video_id()
+        if self.video_id:
+            #redgifs use the same api as gfycat but they have not released an official api
+            #request_url="https://redgifs.com/cajax/get/" + self.video_id  #this endpoint has been deprecated
+            #request_url="https://api.redgifs.com/v1/redgifs/%s" % self.video_id
+
+            self.link_action=sitesBase.DI_ACTION_PLAYABLE
+            stream_url='https://thumbs1.redgifs.com/'+self.video_id+'.webm'
+
+            #https://redgifs.com/watch/darlingmagnificentconey
+            #return 'https://thumbs1.redgifs.com/DarlingMagnificentConey.webm', self.TYPE_VIDEO
+            return stream_url, self.TYPE_VIDEO
+        else:
+            log("cannot get redgif id")
+        return '', ''
+
+    def get_video_id(self):
+        self.video_id=''
+        match = re.findall("redgifs.com/watch/(.+?)(?:-|$|')", self.media_url)
+        if match:
+            log('  found video id['+match[0]+']')
+            self.video_id=match[0]
+
+
+    def get_thumb_url(self):
+        #call this after calling get_playable_url
+        return self.thumb_url
+
 class ClassGifsCom(sitesBase):
     regex='(gifs\.com)'
     #also vidmero.com
